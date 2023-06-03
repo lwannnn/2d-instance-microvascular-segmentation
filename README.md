@@ -16,6 +16,7 @@ folder structure:
 &ensp;&ensp;tile_meta.csv  
 &ensp;&ensp;wsi_meta.csv  
 reference.py  
+oid_mask_encoding.py  
   
 …to be added  
     
