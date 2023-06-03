@@ -3,7 +3,6 @@ This code is used to visualize the mask in json format onto the dataset
 """
 import os
 import json
-import numpy as np
 from PIL import Image, ImageDraw
 
 def mask_to_image(dataset_path):
