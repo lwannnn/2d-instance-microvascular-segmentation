@@ -7,7 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import datetime
 from modelSelector import train_model
-# from Loss.Diceloss import * #ToDO: We can use Various losses to evaluate and tune our model
+from Loss.diceloss import *
 import torch.nn as nn
 from Dataset.hubMapDataset import HubMapDataset as Dataset
 import time
@@ -43,12 +43,14 @@ def main(args):
     test_transform = transforms.Compose([
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    train_set = Dataset(split='Training',dataset_path=args.images,transform=test_transform)
+
+    train_set = Dataset(split='Training',dataset_path=args.images,transform=None)
     train_loader = torch.utils.data.DataLoader(train_set,batch_size=args.batch_size , shuffle=True,num_workers=4)
-    test_set = Dataset(split='Testing',dataset_path=args.images,transform=test_transform)
+    test_set = Dataset(split='Testing',dataset_path=args.images,transform=None)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=1, shuffle=True, num_workers=1)
-    criterion = nn.BCELoss()
+    # criterion = nn.BCELoss()
     best_validation_dsc = 0.0
+    criterion = DiceLoss()
     lr=args.lr
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -124,6 +126,6 @@ if __name__ == "__main__":
     parser.add_argument('--cuda', default=True, type=bool,help='Use GPU calculating')
     parser.add_argument('--seed', default=2021,type=int,help="random seed to make sure get same result each time")
     parser.add_argument('--additional_info', type=str, help='Extra info you want to write in logs',
-                        default="Test,随机种子是2021。数据集：hubMap，batch:16")
+                        default="UNet,随机种子是2021。数据集：hubMap，batch:16")
     args = parser.parse_args()
     main(args)

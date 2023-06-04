@@ -26,7 +26,7 @@ class HubMapDataset(Dataset):
                 annotations = data['annotations']
                 mask_container.append(annotations) #type:'list'
 
-        train_data, test_data, train_mask, test_mask = train_test_split(image_container, mask_container, test_size=0.1,random_state=1,shuffle=True)
+        train_data, test_data, train_mask, test_mask = train_test_split(image_container, mask_container, test_size=0.005,random_state=1,shuffle=True)
 
         if self.split == 'Training':
             self.train_data = train_data
