@@ -5,7 +5,7 @@ dataset acquired:
 https://www.kaggle.com/competitions/hubmap-hacking-the-human-vasculature/data   
 You need download the dataset and put it in 'archive' folder  
 
-folder structure:  
+###Folder structure  
 --archive  
 &ensp;--hubmap-hacking-the-human-vasculature  
 &ensp;&ensp;--train  
@@ -17,6 +17,19 @@ folder structure:
 &ensp;&ensp;wsi_meta.csv  
 reference.py  
 oid_mask_encoding.py  
+--Weight(This folder is created manually^_^ to store training results and logs)
   
-…to be added  
+…to be added    
     
+My environment:  
+python-version: 3.10  
+cuda-version:11.6 
+pytorch-version:1.13.1  
+
+
+###TODO List
+1.Test
+2.Visible
+3.convert mask to expected format
+4.It seems still some problem on training(no-grad?)
+5.It seems just a semantic segmentation?

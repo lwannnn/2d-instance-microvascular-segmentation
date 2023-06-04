@@ -38,7 +38,7 @@ def mask_to_image(dataset_path):
                 coordinates = annotation['coordinates']
                 polygons = []
                 for polygon_coords in coordinates:
-                    for [x, y] in polygon_coords:
+                    for [x,y] in polygon_coords:
                         polygons.append((x, y))
                 draw.polygon(polygons, fill=type_colors[annotation_type])
                 """
