@@ -28,6 +28,7 @@ def test_to_image(pred_mask,id):
     output_path = f"./Results/{id}.tif"
     masked_image.save(output_path)
 
+def submission():
 
 def Prediction(args):
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
@@ -55,7 +56,7 @@ def Prediction(args):
 if __name__ == "__main__":
     #set arguments
     parser = argparse.ArgumentParser(description="Validating model for Segmentation instances of microvascular structures")
-    parser.add_argument("--model",type=str,default="test202306042116",help="modelname")
+    parser.add_argument("--model",type=str,default="test202306042156",help="modelname")
     parser.add_argument("--images", type=str, default="./archive/hubmap-hacking-the-human-vasculature", help="root folder with images")
     parser.add_argument('--cuda', default=True, type=bool,help='Use GPU calculating')
     args = parser.parse_args()
