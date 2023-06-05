@@ -12,6 +12,7 @@ import torch.nn as nn
 from Dataset.hubMapDataset import HubMapDataset as Dataset
 import time
 import Transforms as transforms
+#TODO:Close shared Memory
 
 def setpu_seed(seed):
     torch.manual_seed(seed)
@@ -124,8 +125,8 @@ if __name__ == "__main__":
     parser.add_argument("--weights", type=str, default="./Weight", help="folder to save weights")
     parser.add_argument( "--images", type=str, default="./archive/hubmap-hacking-the-human-vasculature", help="root folder with images")
     parser.add_argument('--cuda', default=True, type=bool,help='Use GPU calculating')
-    parser.add_argument('--seed', default=2021,type=int,help="random seed to make sure get same result each time")
+    parser.add_argument('--seed', default=10,type=int,help="random seed to make sure get same result each time")
     parser.add_argument('--additional_info', type=str, help='Extra info you want to write in logs',
-                        default="UNet,随机种子是2021。数据集：hubMap，batch:16")
+                        default="UNet,随机种子是10。数据集：hubMap，batch:16")
     args = parser.parse_args()
     main(args)

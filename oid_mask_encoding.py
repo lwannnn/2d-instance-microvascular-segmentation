@@ -6,9 +6,8 @@ import typing as t
 import zlib
 def encode_binary_mask(mask: np.ndarray) -> t.Text:
     """Converts a binary mask into OID challenge encoding ascii text."""
-
     # check input mask --
-    if mask.dtype != np.bool:
+    if mask.dtype != bool:
         raise ValueError(
            "encode_binary_mask expects a binary mask, received dtype == %s" %
            mask.dtype)
@@ -18,7 +17,6 @@ def encode_binary_mask(mask: np.ndarray) -> t.Text:
         raise ValueError(
            "encode_binary_mask expects a 2d mask, received shape == %s" %
            mask.shape)
-
     # convert input mask to expected COCO API input --
     mask_to_encode = mask.reshape(mask.shape[0], mask.shape[1], 1)
     mask_to_encode = mask_to_encode.astype(np.uint8)
