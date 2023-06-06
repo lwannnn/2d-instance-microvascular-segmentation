@@ -6,12 +6,12 @@ from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 import os
 import numpy as np
-from PIL import Image
+from PIL import Image,ImageDraw
 import torch
 import json
 
 class HubMapDataset(Dataset):
-    def __init__(self,dataset_path='../archive/train',split="Training",transform=None):
+    def __init__(self,dataset_path='../archive/train',split="Testing",transform=None):
         image_dir = dataset_path + '/train/'
         jsonl_file = dataset_path + '/polygons.jsonl'
         self.split = split
@@ -43,7 +43,9 @@ class HubMapDataset(Dataset):
 
     def __getitem__(self, index):
         img = ""
-        mask = np.zeros((512, 512), dtype=np.float32)
+        mask = np.zeros((512, 512), dtype=np.uint8)
+        mask_image = Image.new('1', (512, 512))
+        draw = ImageDraw.Draw(mask_image)
         annotations = None
         if self.split == 'Training':
             img = self.train_data[index]
@@ -57,23 +59,35 @@ class HubMapDataset(Dataset):
         for annotation in annotations:
             annotation_type = annotation['type']
             if annotation_type == 'blood_vessel':
+                polygons=[]
                 coordinates = annotation['coordinates']
                 for polygon_coords in coordinates:
-                    rr, cc = np.array([i[1] for i in polygon_coords]), np.asarray([i[0] for i in polygon_coords])
-                    mask[rr, cc] = 1
+                    for [x, y] in polygon_coords:
+                        polygons.append((x, y))
+                draw.polygon(polygons,fill=1)
+
+        mask = np.array(mask_image)
+        # print("Tests:"+str(np.unique(mask,return_counts=True)))
+                # for polygon_coords in coordinates:
+                    # rr, cc = np.array([i[1] for i in polygon_coords]), np.asarray([i[0] for i in polygon_coords])
+                    # mask[rr, cc] = 1
 
         # Convert PIL Image and mask to PyTorch tensor
         image = torch.tensor(np.array(image), dtype=torch.float32).permute(2, 0, 1)  # Shape: [C, H, W]
-        mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0) #add channel
+        mask = torch.tensor(mask, dtype=torch.uint8).unsqueeze(0) #add channel
 
         if self.transform:
             image = self.transform(image)
             mask = self.transform(mask)
+        if self.split == 'Training':
+            return image,mask
+        elif self.split == "Testing":
+            return image,mask,img
 
-        return image,mask
 
 if __name__=='__main__':
     traindata = HubMapDataset('../archive/hubmap-hacking-the-human-vasculature')
-    trainloader = torch.utils.data.DataLoader(traindata, batch_size=16, shuffle=True, num_workers=1)
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
-        print(inputs.shape,targets.shape)
+    trainloader = torch.utils.data.DataLoader(traindata, batch_size=1, shuffle=True, num_workers=1)
+    for batch_idx, (inputs, targets,img_id) in enumerate(trainloader):
+        print(targets.unique(return_counts=True))
+        print(str(img_id).split("/")[-1].split(".")[0])
