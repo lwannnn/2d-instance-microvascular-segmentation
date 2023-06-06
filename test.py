@@ -12,6 +12,7 @@ import numpy as np
 import torch.nn as nn
 import pandas as pd
 from PIL import Image, ImageDraw
+from scipy.ndimage import label
 from oid_mask_encoding import encode_binary_mask
 image_dir = './archive/hubmap-hacking-the-human-vasculature/gt/'
 
@@ -33,7 +34,7 @@ def test_to_image(pred_mask,id):#for batch_size=1
     output_path = f"./Results/{id}.tif"
     masked_image.save(output_path)
 
-#This part highly conference: https://www.kaggle.com/code/averma111/pytorch-hubmap-cnn
+#This part partly conference: https://www.kaggle.com/code/averma111/pytorch-hubmap-cnn
 def submission(outputdict):
     submission = pd.DataFrame(outputdict.items(), columns=["id", "prediction_string"])
     submission["height"] = 512
@@ -45,19 +46,22 @@ def submission(outputdict):
 
 def encode_output(outputs, idx):
     id = idx#image name
-    blood_vessel = torch.argmax(outputs, 1)
-    blood_vessel = blood_vessel == 1
-    blood_vessel = blood_vessel * 1
-
-    blood_vessel = blood_vessel.cpu().numpy()
+    outputs = (outputs>0.5) * 1#二值化
+    array = outputs.cpu().numpy()
+    labeled_array, num_features = label(array)# 使用scipy的label函数获取连通域
+    result = torch.zeros(num_features, 512, 512)
+    for i in range(1, num_features + 1):
+        result[i - 1] = torch.tensor(labeled_array == i)
+    blood_vessel = result ==1
     all_encode = {}
-    for i in range(blood_vessel.shape[0]): #i=batch_size
-        list_encode = []
+    list_encode = []
+    blood_vessel = blood_vessel.cpu().numpy()
+    for i in range(blood_vessel.shape[0]): #i = vessel_num
         sliceImage = blood_vessel[i, :, :]
         binarized = sliceImage > 0
         coded_len = encode_binary_mask(binarized)
         list_encode.append(coded_len)
-        all_encode[id] = list_encode
+    all_encode[id] = list_encode
     return all_encode
 
 def prediction(args):
@@ -70,21 +74,19 @@ def prediction(args):
     model.cuda()
     model.eval()
     outputdict = {}
-    outputsoftmax = torch.nn.Softmax2d()
     criterion = DiceLoss()
     test_set = Dataset(split='Testing', dataset_path=args.images, transform=None)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=1, shuffle=True, num_workers=1)
     loss_valid=[]
     for batch_index, (input, mask,img_id) in enumerate(tqdm(test_loader)):
-        # ref_img_id = str(test_loader.dataset.test_data[batch_index])
         ref_img_id = str(img_id).split("/")[-1].split(".")[0]
         input = input.to(device)
         mask = mask.to(device)
         y_pred = model(input)
-        outputs = outputsoftmax(y_pred)
+        outputs = y_pred.contiguous().squeeze(0)#深拷贝,shape:(1,512,512)
         encoded = encode_output(outputs,ref_img_id)
-        for key in encoded:#"key" is image name(except ".tif")
-            outputdict[key] = " ".join([f"0 1.0 {x.decode('utf-8')}" for x in encoded[key]])
+        for key in encoded:# "key" is image name(except ".tif")
+            outputdict[key] = " ".join([f"0 1.0 {x.decode('utf-8')}" for x in encoded[key]])# 因为一张图可能会有好多mask
 
         ACC = 1 - criterion(y_pred, mask)  # DICE
         loss_valid.append(ACC.item())

@@ -30,7 +30,8 @@ pytorch-version:1.13.1
 ###TODO List
 1.Test[√]  
 2.Visible[√]  
-3.convert mask to expected format  
+3.convert mask to expected format[√]   
 4.It seems still some problem on training(no-grad?)[√]  
-5.It seems just a semantic segmentation?  
-6.Unexpected EOFError??
+5.It seems just a semantic segmentation?[√]   
+6.Unexpected EOFError??  
+7.Calculate Confidence(How???)
