@@ -1,3 +1,14 @@
+
+import os
+!mkdir /kaggle/working/weight
+!cp -r /kaggle/input/weight/* /kaggle/working/weight
+
+!mkdir /kaggle/working/packages
+!cp -r /kaggle/input/pycocotools/* /kaggle/working/packages
+os.chdir("/kaggle/working/packages/pycocotools-2.0.6/")
+!python setup.py install
+!pip install . --no-index --find-links /kaggle/working/packages/
+os.chdir("/kaggle/working")
 """
 This code is only used for Upload Notebook: A simple test version
 """
@@ -12,7 +23,6 @@ from PIL import Image
 # Input data files are available in the read-only "../input/" directory
 # For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
 
-import os
 import base64
 import numpy as np
 from pycocotools import _mask as coco_mask
@@ -143,6 +153,7 @@ def encode_binary_mask(mask: np.ndarray) -> t.Text:
     binary_str = zlib.compress(encoded_mask, zlib.Z_BEST_COMPRESSION)
     base64_str = base64.b64encode(binary_str)
     return base64_str
+
 def submission(outputdict):
     submission = pd.DataFrame(outputdict.items(), columns=["id", "prediction_string"])
     submission["height"] = 512
@@ -174,16 +185,16 @@ def encode_output(outputs, idx):
 
 
 def submission_test():
-    device = torch.device("cuda" if torch.cuda.is_available()  else "cpu")
-    model_name = './Weight/test202306052310.pt'#pt name
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model_name = '/kaggle/working/weight/test202306052310.pt'#pt name
     model = UNet()
-    checkpoint = torch.load(model_name)
+    checkpoint = torch.load(model_name)#,map_location='cpu'
     model.load_state_dict(checkpoint)
     model.cuda()
     model.eval()
     outputdict = {}
     with torch.no_grad():
-        for dirname, _, filenames in os.walk('./archive/hubmap-hacking-the-human-vasculature/test'):#/kaggle/input
+        for dirname, _, filenames in os.walk('/kaggle/input/hubmap-hacking-the-human-vasculature/test'):#/kaggle/input
             for filename in filenames:
                 print(os.path.join(dirname, filename))
                 image_name=os.path.join(dirname, filename)
